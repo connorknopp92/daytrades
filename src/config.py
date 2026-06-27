@@ -35,8 +35,12 @@ DEFAULTS = {
     "paper": {
         # Fake-money forward test. The "agent" follows the walk-forward-best
         # strategy per symbol and is compared to a buy-and-hold shadow.
-        "symbols": ["BTC/USD", "ETH/USD", "SPY"],
-        "initial_capital": 10000.0,
+        # symbols: "all" = every crypto + stock; or an explicit list.
+        # stake: dollars of fake money put into each market (initial capital is
+        # stake x number-of-markets).
+        "symbols": "all",
+        "stake": 50.0,
+        "initial_capital": 10000.0,   # fallback if no stake is set
         "state_file": "paper_state.json",
         "select_metric": "sharpe",
     },
