@@ -1,0 +1,30 @@
+# Configuration for the crypto research & backtesting tool.
+# Everything here is for SIMULATION ONLY. No real money, no exchange keys.
+
+data:
+  exchange: coinbaseexchange  # public market data source (verified reachable)
+  symbols:
+    - BTC/USD
+    - ETH/USD
+  timeframe: 1d             # candle size: 1d, 1h, etc.
+  years: 5                  # how much history to pull
+  cache_dir: data/cache     # parquet cache location
+
+# Simulated futures mechanics. These are the "real world" costs that
+# quietly destroy most naive strategies -- tune them to see the effect.
+backtest:
+  initial_capital: 10000    # starting paper balance (USD)
+  leverage: 1.0             # 1.0 = spot-like. Crank to 5/10/20 and watch liquidation.
+  fee: 0.001                # taker fee per side (0.001 = 0.10%)
+  slippage: 0.0005          # price slippage per trade (0.0005 = 0.05%)
+  funding_rate: 0.0         # per-bar funding cost on held notional (perp approximation).
+                            # Default 0 so buy-and-hold matches the spot market return.
+                            # Real perps charge ~0.01%/8h (~0.03%/day). Try --funding 0.0003
+                            # to see how funding quietly bleeds a long-held leveraged position.
+  maintenance_margin: 0.005 # liquidation threshold (0.5% of notional)
+  periods_per_year: 365     # crypto trades every day
+
+analysis:
+  rolling_window: 30        # window (in bars) for rolling vol/correlation
+
+output_dir: outputs
