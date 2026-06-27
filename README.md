@@ -34,7 +34,36 @@ market history and backtesting strategies in a realistic simulation. It is a
 pip install -r requirements.txt
 ```
 
-## Usage
+## Web app (the clickable version)
+
+A browser dashboard — pick a coin and strategy, drag the leverage slider, tap
+**Run**, and see charts and stats. Works great on a tablet/phone browser.
+
+Run it locally:
+
+```bash
+streamlit run streamlit_app.py
+```
+
+Then open the printed `http://localhost:8501` URL.
+
+### Deploy a public link (free, no install for viewers)
+
+Streamlit Community Cloud serves the app straight from this GitHub repo:
+
+1. Go to **https://share.streamlit.io** and sign in with GitHub, then authorize it.
+2. **Create app → Deploy a public app from GitHub** → pick the repo
+   `connorknopp92/daytrades`, choose the branch, set the main file to
+   `streamlit_app.py`.
+3. **Deploy** and wait ~2 minutes. You'll get a URL like
+   `https://<name>.streamlit.app`.
+4. Open that URL in any browser. On Android Chrome, use **⋮ → Add to Home screen**
+   for an app-like icon.
+
+The deploy step is tied to your own GitHub login, so it's the one part you click
+yourself — everything it needs is already in the repo.
+
+## Usage (command line)
 
 ```bash
 # 1. Download ~5 years of history (cached to data/cache/)

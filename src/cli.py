@@ -9,12 +9,12 @@ from __future__ import annotations
 import argparse
 import sys
 
+from . import service
 from .config import load_config, project_path
 from .data import fetch as data_fetch
 from .analysis import report as report_mod
 from .backtest import metrics as metrics_mod
-from .backtest.engine import run_backtest
-from .strategies.base import get_strategy, available_strategies
+from .strategies.base import available_strategies
 
 
 def _load_symbol(cfg, symbol, timeframe=None, years=None, use_cache=True):
@@ -50,38 +50,19 @@ def cmd_analyze(args, cfg) -> int:
 
 
 def cmd_backtest(args, cfg) -> int:
-    bt = cfg["backtest"]
-    leverage = args.leverage if args.leverage is not None else bt["leverage"]
-    fee = args.fee if args.fee is not None else bt["fee"]
-    slippage = args.slippage if args.slippage is not None else bt["slippage"]
-    funding = args.funding if args.funding is not None else bt["funding_rate"]
-    ppy = bt["periods_per_year"]
     out_dir = project_path(cfg, cfg["output_dir"])
-
-    df, synthetic = _load_symbol(cfg, args.symbol)
-
-    def run(strategy_name):
-        strat = get_strategy(strategy_name)
-        signals = strat.generate_signals(df)
-        result = run_backtest(
-            df, signals,
-            initial_capital=bt["initial_capital"], leverage=leverage,
-            fee=fee, slippage=slippage, funding_rate=funding,
-            maintenance_margin=bt["maintenance_margin"],
-        )
-        m = metrics_mod.compute_all(
-            result.equity_curve, ppy, n_trades=result.n_trades,
-            exposure=result.exposure, liquidated=result.liquidated,
-        )
-        return result, m
-
-    strat_result, strat_m = run(args.strategy)
-    bench_result, bench_m = run("buy_and_hold")
-    strat_m.update({"_leverage": leverage, "_fee": fee, "_slippage": slippage})
+    res = service.backtest_summary(
+        cfg, args.symbol, args.strategy,
+        leverage=args.leverage, fee=args.fee,
+        slippage=args.slippage, funding=args.funding,
+    )
+    strat_m, bench_m = res["strat_metrics"], res["bench_metrics"]
+    p = res["params"]
+    strat_m.update({"_leverage": p["leverage"], "_fee": p["fee"], "_slippage": p["slippage"]})
 
     print(f"\n=== {args.strategy} on {args.symbol} "
-          f"(leverage {leverage}x, fee {fee}, slippage {slippage}) ===")
-    if synthetic:
+          f"(leverage {p['leverage']}x, fee {p['fee']}, slippage {p['slippage']}) ===")
+    if res["synthetic"]:
         print("  (SYNTHETIC data — exchange was unreachable)")
     print(metrics_mod.format_metrics(strat_m))
     print(f"\n--- benchmark: buy_and_hold ---")
@@ -89,8 +70,8 @@ def cmd_backtest(args, cfg) -> int:
 
     path = report_mod.backtest_report(
         args.symbol, args.strategy, strat_m, bench_m,
-        strat_result.equity_curve, bench_result.equity_curve,
-        out_dir, synthetic=synthetic,
+        res["strat_equity"], res["bench_equity"],
+        out_dir, synthetic=res["synthetic"],
     )
     print(f"\nWrote backtest report: {path}")
     return 0
