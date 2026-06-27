@@ -1,11 +1,16 @@
-"""Daily accumulation-signal notifier.
+"""Daily market digest notifier.
 
-Computes today's buy signal for each configured market and, when one is in an
-actionable window (FAVORABLE / LEANING FAVORABLE), emits an email subject + body
-for the GitHub Actions workflow to send. Run via ``python -m src.notify``.
+Each day, computes a current-conditions signal for every tracked market and
+emails a ranked digest: the top stocks/ETFs and top crypto that are currently
+cheapest versus their OWN long-term trend (most below their 200-day average /
+deepest in a dip) — i.e. historically sensible *accumulation* candidates.
 
-Safety: never alerts on synthetic/fallback data (if the exchange was
-unreachable), so a data outage can't masquerade as a "buy now" signal.
+This is explicitly NOT a prediction of which investments will go up, and not
+financial advice. It ranks by present conditions vs. tested rules — a rule for
+*where to look*, not what will win. Run via ``python -m src.notify``.
+
+Safety: synthetic/fallback data (exchange unreachable) is ignored entirely, so a
+data outage can't produce a misleading digest.
 """
 
 from __future__ import annotations
@@ -15,59 +20,86 @@ import os
 from . import accumulation as accum
 from . import service
 from .config import load_config
+from .data import fetch as data_fetch
 
 ACTIONABLE = {"FAVORABLE", "LEANING FAVORABLE"}
 _EMOJI = {"FAVORABLE": "🟢", "LEANING FAVORABLE": "🟡", "NEUTRAL": "⚪"}
+TOP_N = 3
 
 
 def evaluate_symbol(cfg: dict, symbol: str) -> dict:
-    """Load live data for ``symbol`` and compute its current signal."""
+    """Load fresh data for ``symbol`` and compute its current signal."""
     df, synthetic = service.load_symbol(cfg, symbol, use_cache=False)
     sig = accum.current_signal(df)
     sig["symbol"] = symbol
     sig["synthetic"] = synthetic
+    sig["is_stock"] = data_fetch.is_stock(symbol)
     return sig
+
+
+def _score(r: dict) -> float:
+    """Cheapness vs. the market's own trend: below-MA depth + dip depth.
+
+    Higher = more 'on sale' relative to its history. NOT a return forecast.
+    """
+    score = 0.0
+    if r.get("pct_vs_ma") is not None:
+        score += -r["pct_vs_ma"]                       # below the 200-day avg
+    score += 0.5 * (-r.get("drawdown_from_high", 0.0))  # off the recent high
+    return score
 
 
 def _line(r: dict) -> str:
     emoji = _EMOJI.get(r["verdict"], "")
-    parts = [f"${r['price']:,.0f}"]
+    parts = [f"${r['price']:,.2f}" if r["price"] < 100 else f"${r['price']:,.0f}"]
     if r.get("pct_vs_ma") is not None:
         parts.append(f"{r['pct_vs_ma']*100:+.0f}% vs {r['ma_days']}-day avg")
     parts.append(f"{r['drawdown_from_high']*100:.0f}% off recent high")
-    return f"{emoji} {r['symbol']}: {r['verdict']} — " + ", ".join(parts)
+    return f"{emoji} {r['symbol']} ({r['verdict']}) — " + ", ".join(parts)
 
 
-def build_payload(results: list[dict], actionable: set[str] = ACTIONABLE):
-    """Pure logic: decide whether to send and build (subject, body).
+def build_payload(results: list[dict], top_n: int = TOP_N):
+    """Pure logic: build the daily digest (should_send, subject, body).
 
-    Synthetic results are ignored entirely so a data outage never triggers a
-    misleading alert. Returns (should_send, subject, body).
+    Sends every day there is real data; ignores synthetic rows. Returns
+    (should_send, subject, body).
     """
     real = [r for r in results if not r.get("synthetic")]
-    hits = [r for r in real if r["verdict"] in actionable]
-    should_send = len(hits) > 0
-
-    if hits:
-        names = ", ".join(h["symbol"].split("/")[0] for h in hits)
-        subject = f"🟢 Crypto buy signal — {names} favorable to accumulate"
-    else:
-        subject = "Crypto check — no actionable buy signal today"
-
-    body_lines = ["Daily accumulation check", ""]
-    body_lines += [_line(r) for r in real] or ["(no live market data available)"]
+    should_send = len(real) > 0
     if not real:
-        body_lines.append("Could not reach the exchange for fresh prices — no signal sent.")
-    body_lines += [
+        return False, "Daily market digest — no data", (
+            "Could not reach the data sources for fresh prices today, so no "
+            "digest was generated.")
+
+    stocks = sorted((r for r in real if r.get("is_stock")), key=_score, reverse=True)
+    crypto = sorted((r for r in real if not r.get("is_stock")), key=_score, reverse=True)
+    favorable = [r for r in real if r["verdict"] in ACTIONABLE]
+
+    if favorable:
+        subject = f"📈 Daily picks — {len(favorable)} market(s) look favorable to accumulate"
+    else:
+        subject = "📈 Daily market digest — nothing notably cheap today"
+
+    lines = [
+        "Daily market digest",
+        "Ranked by how cheap each market is vs. its OWN long-term trend",
+        "(most below its 200-day average / deepest dip first).",
         "",
-        "What this means: a FAVORABLE/LEANING reading is when price is below its "
-        "long-term trend and/or in a dip — historically a steadier window to add to "
-        "a long-term hold.",
-        "",
-        "⚠️ This describes current conditions vs. tested rules. It is NOT a prediction "
-        "and not financial advice. No one can reliably time the bottom. Simulation/education only.",
+        "📊 TOP STOCKS / ETFs:",
     ]
-    return should_send, subject, "\n".join(body_lines)
+    lines += [f"  {i}. {_line(r)}" for i, r in enumerate(stocks[:top_n], 1)] or ["  (none)"]
+    lines += ["", "🪙 TOP CRYPTO:"]
+    lines += [f"  {i}. {_line(r)}" for i, r in enumerate(crypto[:top_n], 1)] or ["  (none)"]
+    lines += [
+        "",
+        "─" * 40,
+        "⚠️ This is NOT a prediction of which investments will go up, and NOT "
+        "financial advice. It ranks markets only by current price vs. their own "
+        "history — a rule for where to look, not what will win. No one can predict "
+        "the best stock to buy. Most active trading loses to patient, diversified "
+        "holding. Simulation / education only.",
+    ]
+    return should_send, subject, "\n".join(lines)
 
 
 def _emit_github_output(should_send: bool, subject: str, body: str) -> None:
