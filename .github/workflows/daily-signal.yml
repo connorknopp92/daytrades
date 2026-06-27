@@ -40,6 +40,9 @@ jobs:
           username: ${{ secrets.MAIL_USERNAME }}
           password: ${{ secrets.MAIL_PASSWORD }}
           subject: ${{ steps.sig.outputs.subject }}
-          to: ${{ secrets.MAIL_USERNAME }}
+          # Recipients: set the optional MAIL_TO secret to a comma-separated
+          # list (e.g. you + others) to send to several people without putting
+          # their addresses in this public repo. Falls back to just MAIL_USERNAME.
+          to: ${{ secrets.MAIL_TO || secrets.MAIL_USERNAME }}
           from: Crypto Buy Signal <${{ secrets.MAIL_USERNAME }}>
           body: ${{ steps.sig.outputs.body }}
