@@ -37,7 +37,13 @@ pip install -r requirements.txt
 ## Web app (the clickable version)
 
 A browser dashboard — pick a coin and strategy, drag the leverage slider, tap
-**Run**, and see charts and stats. Works great on a tablet/phone browser.
+**Run**, and see charts and stats. Works great on a tablet/phone browser. Two tabs:
+
+- **Strategy backtest** — market analysis + a strategy vs. buy-and-hold.
+- **When to buy (accumulation)** — a live "is now a good time to accumulate?"
+  signal plus a backtest of weekly buying rules (DCA, lump sum, buy-the-dip,
+  buy-below-200-day) over the last few years. Answers *when to enter a hold*
+  without pretending to predict the bottom.
 
 Run it locally:
 
