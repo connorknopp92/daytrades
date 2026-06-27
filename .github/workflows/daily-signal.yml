@@ -1,7 +1,7 @@
 name: Daily buy signal
 
-# Runs once a day, computes the accumulation signal, and emails you only when a
-# market is in an actionable (FAVORABLE / LEANING FAVORABLE) window.
+# Runs once a day and emails a ranked digest: the top stocks/ETFs and top crypto
+# currently cheapest vs. their own long-term trend (accumulation candidates).
 # Requires two repo secrets: MAIL_USERNAME (your Gmail) and MAIL_PASSWORD
 # (a Gmail App Password). The email is sent to MAIL_USERNAME (yourself), so your
 # address never appears in this public repo.
@@ -30,7 +30,7 @@ jobs:
         id: sig
         run: python -m src.notify
 
-      - name: Send email (only when actionable)
+      - name: Send daily digest email
         if: steps.sig.outputs.should_send == 'true'
         uses: dawidd6/action-send-mail@v3
         with:

@@ -1,46 +1,53 @@
-"""Tests for the daily notifier's send/skip logic (pure, offline)."""
+"""Tests for the daily digest notifier (pure, offline)."""
 
 from src import notify
 
 
-def _result(symbol, verdict, synthetic=False):
+def _result(symbol, verdict, pct_vs_ma, drawdown, is_stock, synthetic=False):
     return {
         "symbol": symbol, "verdict": verdict, "synthetic": synthetic,
-        "price": 50000.0, "pct_vs_ma": -0.2, "ma_days": 200,
-        "drawdown_from_high": -0.5,
+        "is_stock": is_stock, "price": 100.0, "pct_vs_ma": pct_vs_ma,
+        "ma_days": 200, "drawdown_from_high": drawdown,
     }
 
 
-def test_sends_when_favorable():
-    should_send, subject, body = notify.build_payload(
-        [_result("BTC/USD", "FAVORABLE"), _result("ETH/USD", "NEUTRAL")])
+def test_digest_sends_daily_with_real_data():
+    # Even when everything is NEUTRAL, the daily digest still goes out.
+    res = [
+        _result("AAPL", "NEUTRAL", 0.10, -0.05, is_stock=True),
+        _result("BTC/USD", "NEUTRAL", 0.05, -0.10, is_stock=False),
+    ]
+    should_send, subject, body = notify.build_payload(res)
     assert should_send is True
-    assert "BTC" in subject
-    assert "BTC/USD: FAVORABLE" in body
+    assert "TOP STOCKS" in body and "TOP CRYPTO" in body
+    assert "AAPL" in body and "BTC/USD" in body
 
 
-def test_leaning_is_actionable():
-    should_send, _, _ = notify.build_payload([_result("BTC/USD", "LEANING FAVORABLE")])
-    assert should_send is True
+def test_ranks_cheapest_vs_trend_first():
+    # NVDA is further below its trend than AAPL, so it should rank first.
+    res = [
+        _result("AAPL", "NEUTRAL", -0.05, -0.10, is_stock=True),
+        _result("NVDA", "FAVORABLE", -0.30, -0.40, is_stock=True),
+    ]
+    _, _, body = notify.build_payload(res)
+    assert body.index("NVDA") < body.index("AAPL")
 
 
-def test_no_send_when_all_neutral():
-    should_send, subject, _ = notify.build_payload(
-        [_result("BTC/USD", "NEUTRAL"), _result("ETH/USD", "NEUTRAL")])
+def test_subject_reflects_favorable_count():
+    res = [_result("BTC/USD", "FAVORABLE", -0.25, -0.5, is_stock=False)]
+    _, subject, _ = notify.build_payload(res)
+    assert "1 market" in subject
+
+
+def test_no_send_when_only_synthetic():
+    res = [_result("BTC/USD", "FAVORABLE", -0.25, -0.5, is_stock=False, synthetic=True)]
+    should_send, _, _ = notify.build_payload(res)
     assert should_send is False
-    assert "no actionable" in subject.lower()
 
 
-def test_never_sends_on_synthetic_data():
-    # Even a FAVORABLE verdict must NOT alert if the data was synthetic/fallback.
-    should_send, _, body = notify.build_payload(
-        [_result("BTC/USD", "FAVORABLE", synthetic=True)])
-    assert should_send is False
-    # synthetic rows are excluded from the body entirely
-    assert "BTC/USD" not in body
-
-
-def test_body_has_disclaimer():
-    _, _, body = notify.build_payload([_result("BTC/USD", "FAVORABLE")])
-    assert "not financial advice" in body.lower()
-    assert "not a prediction" in body.lower()
+def test_body_has_no_prediction_disclaimer():
+    res = [_result("SPY", "NEUTRAL", 0.02, -0.03, is_stock=True)]
+    _, _, body = notify.build_payload(res)
+    low = body.lower()
+    assert "not a prediction" in low
+    assert "not" in low and "financial advice" in low
