@@ -12,7 +12,10 @@ import yaml
 DEFAULTS = {
     "data": {
         "exchange": "coinbaseexchange",
-        "symbols": ["BTC/USD", "ETH/USD"],
+        "symbols": ["BTC/USD", "ETH/USD", "SOL/USD", "XRP/USD", "DOGE/USD",
+                    "ADA/USD", "LTC/USD", "AVAX/USD", "LINK/USD"],
+        "stocks": ["AAPL", "MSFT", "NVDA", "TSLA", "AMZN", "GOOGL", "META",
+                   "SPY", "QQQ"],
         "timeframe": "1d",
         "years": 5,
         "cache_dir": "data/cache",

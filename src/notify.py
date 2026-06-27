@@ -86,7 +86,7 @@ def _emit_github_output(should_send: bool, subject: str, body: str) -> None:
 
 def main() -> int:
     cfg = load_config()
-    symbols = cfg["data"]["symbols"]
+    symbols = cfg["data"]["symbols"] + cfg["data"].get("stocks", [])
     results = []
     for symbol in symbols:
         try:

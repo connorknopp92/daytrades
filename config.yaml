@@ -2,11 +2,30 @@
 # Everything here is for SIMULATION ONLY. No real money, no exchange keys.
 
 data:
-  exchange: coinbaseexchange  # public market data source (verified reachable)
-  symbols:
+  exchange: coinbaseexchange  # crypto data source (verified reachable)
+  symbols:                  # crypto pairs (fetched from Coinbase)
     - BTC/USD
     - ETH/USD
+    - SOL/USD
+    - XRP/USD
+    - DOGE/USD
+    - ADA/USD
+    - LTC/USD
+    - AVAX/USD
+    - LINK/USD
+  stocks:                   # stock/ETF tickers (fetched from Yahoo Finance)
+    - AAPL
+    - MSFT
+    - NVDA
+    - TSLA
+    - AMZN
+    - GOOGL
+    - META
+    - SPY                   # S&P 500 ETF — the classic buy-and-hold benchmark
+    - QQQ                   # Nasdaq-100 ETF
   timeframe: 1d             # candle size: 1d, 1h, etc.
+  # Note: stablecoins (USDC/USDT/DAI) are intentionally excluded — they're pegged
+  # to ~$1, so there's nothing to chart, backtest, or signal.
   years: 5                  # how much history to pull
   cache_dir: data/cache     # parquet cache location
 

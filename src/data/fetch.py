@@ -132,6 +132,63 @@ def synthetic_ohlcv(symbol: str, timeframe: str, years: int, seed: int = 42) -> 
     return df
 
 
+def is_stock(symbol: str) -> bool:
+    """Crypto pairs look like 'BTC/USD'; bare tickers like 'AAPL' are stocks."""
+    return "/" not in symbol
+
+
+_YAHOO_INTERVALS = {"1d": "1d", "1wk": "1wk", "1mo": "1mo"}
+
+
+def _parse_yahoo_json(data: dict) -> pd.DataFrame:
+    """Turn a Yahoo chart-API response into an OHLCV DataFrame."""
+    chart = data.get("chart", {})
+    if chart.get("error"):
+        raise RuntimeError(f"Yahoo error: {chart['error']}")
+    result = (chart.get("result") or [None])[0]
+    if not result or "timestamp" not in result:
+        raise RuntimeError("Yahoo returned no data for this ticker")
+
+    ts = result["timestamp"]
+    quote = result["indicators"]["quote"][0]
+    df = pd.DataFrame(
+        {
+            "open": quote["open"],
+            "high": quote["high"],
+            "low": quote["low"],
+            "close": quote["close"],
+            "volume": quote["volume"],
+        },
+        index=pd.to_datetime(ts, unit="s", utc=True),
+    ).dropna(subset=["close"])
+    df.attrs["synthetic"] = False
+    return df
+
+
+def _fetch_from_yahoo(ticker: str, timeframe: str, years: int) -> pd.DataFrame:
+    """Fetch daily stock/ETF history from the keyless Yahoo Finance chart API.
+
+    Plain ``requests`` honors the env proxy + CA bundle automatically (unlike
+    ccxt), so no special session setup is needed here.
+    """
+    import requests  # lazy import so offline use / tests don't require it
+
+    interval = _YAHOO_INTERVALS.get(timeframe, "1d")
+    period2 = _now_ms() // 1000
+    period1 = period2 - int(years * 365.25 * 86400)
+    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ticker}"
+    headers = {"User-Agent": "Mozilla/5.0 (compatible; daytrades-sandbox/1.0)"}
+    resp = requests.get(
+        url, params={"period1": period1, "period2": period2, "interval": interval},
+        headers=headers, timeout=30,
+    )
+    resp.raise_for_status()
+    df = _parse_yahoo_json(resp.json())
+    if df.empty:
+        raise RuntimeError(f"No data returned for {ticker} from Yahoo")
+    return df
+
+
 def get_ohlcv(
     cfg: dict,
     symbol: str,
@@ -140,28 +197,33 @@ def get_ohlcv(
     use_cache: bool = True,
     allow_synthetic: bool = True,
 ) -> pd.DataFrame:
-    """Return OHLCV history for ``symbol``: cache -> exchange -> synthetic.
+    """Return OHLCV history for ``symbol``: cache -> source -> synthetic.
 
-    Always returns a DataFrame indexed by UTC timestamp with columns
-    open/high/low/close/volume.
+    Routes crypto pairs (e.g. ``BTC/USD``) to the exchange via ccxt and bare
+    stock tickers (e.g. ``AAPL``) to Yahoo Finance. Always returns a DataFrame
+    indexed by UTC timestamp with columns open/high/low/close/volume.
     """
     data_cfg = cfg["data"]
-    exchange_id = data_cfg["exchange"]
     timeframe = timeframe or data_cfg["timeframe"]
     years = years or data_cfg["years"]
     cache_dir = data_cfg["cache_dir"]
+    stock = is_stock(symbol)
+    source = "yahoo" if stock else data_cfg["exchange"]
 
     if use_cache:
-        cached = cache.load(cache_dir, exchange_id, symbol, timeframe)
+        cached = cache.load(cache_dir, source, symbol, timeframe)
         if cached is not None and not cached.empty:
             return cached
 
-    since_ms = _now_ms() - int(years * 365.25 * timeframe_ms("1d"))
     try:
-        df = _fetch_from_exchange(exchange_id, symbol, timeframe, since_ms)
-        cache.save(df, cache_dir, exchange_id, symbol, timeframe)
+        if stock:
+            df = _fetch_from_yahoo(symbol, timeframe, years)
+        else:
+            since_ms = _now_ms() - int(years * 365.25 * timeframe_ms("1d"))
+            df = _fetch_from_exchange(source, symbol, timeframe, since_ms)
+        cache.save(df, cache_dir, source, symbol, timeframe)
         return df
-    except Exception as exc:  # network blocked, geo-restricted, ccxt missing, etc.
+    except Exception as exc:  # network blocked, geo-restricted, bad ticker, etc.
         if not allow_synthetic:
             raise
         print(

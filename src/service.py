@@ -14,6 +14,17 @@ from .backtest.engine import run_backtest
 from .data import fetch as data_fetch
 from .strategies.base import get_strategy
 
+# Stocks trade ~252 sessions/year; crypto trades every day. Using the right
+# figure keeps annualized vol, Sharpe/Sortino and CAGR honest per asset class.
+STOCK_PERIODS_PER_YEAR = 252
+
+
+def periods_per_year(cfg: dict, symbol: str) -> int:
+    """Annualization factor for ``symbol`` (252 for stocks, config value otherwise)."""
+    if data_fetch.is_stock(symbol):
+        return STOCK_PERIODS_PER_YEAR
+    return cfg["backtest"]["periods_per_year"]
+
 
 def load_symbol(cfg: dict, symbol: str, timeframe: str | None = None,
                 years: int | None = None, use_cache: bool = True):
@@ -28,7 +39,7 @@ def market_summary(cfg: dict, symbol: str, df: pd.DataFrame | None = None) -> di
 
     Pass an already-loaded ``df`` to avoid refetching; otherwise it is loaded.
     """
-    ppy = cfg["backtest"]["periods_per_year"]
+    ppy = periods_per_year(cfg, symbol)
     window = cfg["analysis"]["rolling_window"]
     synthetic = False
     if df is None:
@@ -46,10 +57,11 @@ def market_summary(cfg: dict, symbol: str, df: pd.DataFrame | None = None) -> di
 
 
 def run_strategy(cfg: dict, df: pd.DataFrame, strategy_name: str,
-                 leverage: float, fee: float, slippage: float, funding: float):
+                 leverage: float, fee: float, slippage: float, funding: float,
+                 ppy: int | None = None):
     """Run a single strategy over ``df``. Returns (BacktestResult, metrics dict)."""
     bt = cfg["backtest"]
-    ppy = bt["periods_per_year"]
+    ppy = bt["periods_per_year"] if ppy is None else ppy
     strat = get_strategy(strategy_name)
     signals = strat.generate_signals(df)
     result = run_backtest(
@@ -86,8 +98,9 @@ def backtest_summary(cfg: dict, symbol: str, strategy_name: str,
     else:
         synthetic = bool(df.attrs.get("synthetic", False))
 
-    strat_result, strat_m = run_strategy(cfg, df, strategy_name, leverage, fee, slippage, funding)
-    bench_result, bench_m = run_strategy(cfg, df, "buy_and_hold", leverage, fee, slippage, funding)
+    ppy = periods_per_year(cfg, symbol)
+    strat_result, strat_m = run_strategy(cfg, df, strategy_name, leverage, fee, slippage, funding, ppy)
+    bench_result, bench_m = run_strategy(cfg, df, "buy_and_hold", leverage, fee, slippage, funding, ppy)
 
     return {
         "strat_metrics": strat_m,

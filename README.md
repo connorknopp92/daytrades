@@ -20,8 +20,14 @@ market history and backtesting strategies in a realistic simulation. It is a
 
 ## What it does
 
-1. **Fetch** ~5 years of real daily price history (BTC/USD, ETH/USD, ...) from
-   Coinbase, cached locally.
+1. **Fetch** ~5 years of real daily price history, cached locally:
+   - **Crypto** (BTC, ETH, SOL, XRP, DOGE, ADA, LTC, AVAX, LINK) from Coinbase.
+   - **Stocks / ETFs** (AAPL, MSFT, NVDA, TSLA, AMZN, GOOGL, META, SPY, QQQ) from
+     Yahoo Finance. Bare tickers (e.g. `AAPL`) route to stocks; `BTC/USD`-style
+     pairs route to crypto. Annualized metrics use 252 trading days for stocks,
+     365 for crypto.
+   - Stablecoins (USDC/USDT/DAI) are intentionally excluded — pegged to ~$1, so
+     there's nothing to chart or backtest.
 2. **Analyze** the markets: volatility, trends, drawdowns, BTC/ETH correlation —
    written up as a report with charts.
 3. **Backtest** classic strategies against that history with realistic simulated

@@ -36,7 +36,7 @@ def cmd_fetch(args, cfg) -> int:
 
 def cmd_analyze(args, cfg) -> int:
     out_dir = project_path(cfg, cfg["output_dir"])
-    ppy = cfg["backtest"]["periods_per_year"]
+    ppy = service.periods_per_year(cfg, args.symbol)
     window = cfg["analysis"]["rolling_window"]
     df, synthetic = _load_symbol(cfg, args.symbol)
     path = report_mod.market_report(

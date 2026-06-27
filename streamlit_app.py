@@ -43,8 +43,14 @@ st.warning(
 # --- shared control: which market --------------------------------------------
 with st.sidebar:
     st.header("Market")
-    symbol = st.selectbox("Coin", cfg["data"]["symbols"], index=0)
+    asset = st.radio("Asset type", ["Crypto", "Stocks / ETFs"], horizontal=True)
+    if asset == "Crypto":
+        symbol = st.selectbox("Coin", cfg["data"]["symbols"], index=0)
+    else:
+        symbol = st.selectbox("Stock / ETF", cfg["data"]["stocks"], index=0)
     st.caption("This choice applies to both tabs.")
+    st.caption("ℹ️ Stablecoins (USDC/USDT) are excluded — they sit at ~$1, "
+               "so there's nothing to backtest.")
 
 df, synthetic = _load(symbol)
 if synthetic:
