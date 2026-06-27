@@ -23,6 +23,9 @@ def rsi(close: pd.Series, period: int = 14) -> pd.Series:
 
 class RsiReversion(Strategy):
     name = "rsi_reversion"
+    family = "mean_reversion"
+    classic = False
+    blurb = "Buy oversold (RSI<30), short overbought (RSI>70). Works in range-bound markets, fights strong trends."
 
     def __init__(self, period: int = 14, oversold: float = 30.0, overbought: float = 70.0):
         self.period = period

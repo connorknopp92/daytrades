@@ -53,6 +53,16 @@ A browser dashboard — pick a coin and strategy, drag the leverage slider, tap
   signal plus a backtest of weekly buying rules (DCA, lump sum, buy-the-dip,
   buy-below-200-day) over the last few years. Answers *when to enter a hold*
   without pretending to predict the bottom.
+- **Strategy Lab** — ranks all 11 strategies **walk-forward** (trained on older
+  data, then scored on a recent hold-out) by Sharpe / total return / Calmar, with
+  ⭐ marking the evidence-backed classics. The hold-out column exposes overfitting:
+  past winners routinely fail out-of-sample. See `docs/strategy-research.md` for
+  the fact-checked basis (Faber, Moskowitz-Ooi-Pedersen, Sullivan-Timmermann-White,
+  Bailey-López de Prado).
+
+Strategies: `buy_and_hold`, `sma_crossover`⭐, `sma_timing`⭐, `macd`⭐,
+`ts_momentum`⭐, `momentum_roc`, `donchian_breakout`⭐, `keltner_breakout`,
+`rsi_reversion`, `bollinger_reversion`, `zscore_reversion`.
 
 Run it locally:
 

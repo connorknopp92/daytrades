@@ -18,6 +18,7 @@ from __future__ import annotations
 import os
 
 from . import accumulation as accum
+from . import ranking as ranking_mod
 from . import service
 from .config import load_config
 from .data import fetch as data_fetch
@@ -28,12 +29,21 @@ TOP_N = 3
 
 
 def evaluate_symbol(cfg: dict, symbol: str) -> dict:
-    """Load fresh data for ``symbol`` and compute its current signal."""
+    """Load fresh data for ``symbol``; compute its signal + best walk-forward strategy."""
     df, synthetic = service.load_symbol(cfg, symbol, use_cache=False)
     sig = accum.current_signal(df)
     sig["symbol"] = symbol
     sig["synthetic"] = synthetic
     sig["is_stock"] = data_fetch.is_stock(symbol)
+    try:
+        best = ranking_mod.best_for_symbol(cfg, symbol, df)
+        sig["best_strategy"] = best["winner"]
+        sig["best_classic"] = best["winner_classic"]
+        sig["best_holdout_return"] = best["winner_holdout_return"]
+        sig["bench_holdout_return"] = best["benchmark_holdout_return"]
+    except Exception as exc:  # ranking is best-effort; never break the digest
+        print(f"[warn] ranking {symbol}: {exc}")
+        sig["best_strategy"] = None
     return sig
 
 
@@ -90,14 +100,31 @@ def build_payload(results: list[dict], top_n: int = TOP_N):
     lines += [f"  {i}. {_line(r)}" for i, r in enumerate(stocks[:top_n], 1)] or ["  (none)"]
     lines += ["", "🪙 TOP CRYPTO:"]
     lines += [f"  {i}. {_line(r)}" for i, r in enumerate(crypto[:top_n], 1)] or ["  (none)"]
+
+    # Best historical strategy per asset (walk-forward: trained, then hold-out tested).
+    best_rows = [r for r in real if r.get("best_strategy")]
+    if best_rows:
+        lines += ["", "🏆 BEST HISTORICAL STRATEGY PER MARKET (walk-forward):",
+                  "   (trained on older data, then checked on a recent hold-out)"]
+        for r in best_rows:
+            star = "⭐" if r.get("best_classic") else "  "
+            wh = r.get("best_holdout_return")
+            bh = r.get("bench_holdout_return")
+            tail = ""
+            if wh is not None and bh is not None:
+                tail = f" — hold-out {wh*100:+.0f}% vs buy&hold {bh*100:+.0f}%"
+            lines.append(f"  {star} {r['symbol']}: {r['best_strategy']}{tail}")
+
     lines += [
         "",
         "─" * 40,
         "⚠️ This is NOT a prediction of which investments will go up, and NOT "
         "financial advice. It ranks markets only by current price vs. their own "
-        "history — a rule for where to look, not what will win. No one can predict "
-        "the best stock to buy. Most active trading loses to patient, diversified "
-        "holding. Simulation / education only.",
+        "history — a rule for where to look, not what will win. The 'best strategy' "
+        "is the past winner trained on old data; the hold-out figure shows it often "
+        "does NOT repeat — picking strategies by past performance is overfitting. "
+        "No one can predict the best stock to buy. Most active trading loses to "
+        "patient, diversified holding. Simulation / education only.",
     ]
     return should_send, subject, "\n".join(lines)
 

@@ -13,6 +13,7 @@ import streamlit as st
 from src.config import load_config
 from src import service
 from src import accumulation as accum
+from src import ranking as ranking_mod
 from src.strategies.base import available_strategies
 
 st.set_page_config(page_title="Crypto Backtest Sandbox", page_icon="📊", layout="wide")
@@ -56,7 +57,8 @@ df, synthetic = _load(symbol)
 if synthetic:
     st.error("Live exchange unreachable — showing **SYNTHETIC** data (not real market history).")
 
-tab_bt, tab_buy = st.tabs(["📉 Strategy backtest", "🛒 When to buy (accumulation)"])
+tab_bt, tab_buy, tab_lab = st.tabs(
+    ["📉 Strategy backtest", "🛒 When to buy (accumulation)", "🧪 Strategy Lab"])
 
 # ===========================================================================
 # TAB 1 — strategy backtest vs buy & hold
@@ -226,6 +228,74 @@ with tab_buy:
             "regret. **Buying weekly (DCA)** smooths that out and is the easiest to actually "
             "stick to. **Waiting for dips** can backfire — you may sit in cash while price "
             "runs away. There's no free lunch in timing; consistency is the realistic edge.")
+
+# ===========================================================================
+# TAB 3 — Strategy Lab: walk-forward ranking of every strategy
+# ===========================================================================
+with tab_lab:
+    st.subheader(f"Strategy Lab — {symbol}")
+    st.write("Ranks **every** strategy on a training window, then shows how each "
+             "actually did on a later **hold-out** window. The gap between the two "
+             "is the whole point: a strategy that looks great in training but falls "
+             "apart out-of-sample was just overfit.")
+
+    lc1, lc2 = st.columns(2)
+    lab_view = lc1.radio("Timeframe", ["Daily", "Weekly", "Monthly"],
+                         horizontal=True, key="lab_view").lower()
+    lab_hist = lc2.selectbox("History", ["3 years", "5 years", "10 years", "Max"],
+                             index=1, key="lab_hist")
+    lab_years = {"3 years": 3, "5 years": 5, "10 years": 10, "Max": None}[lab_hist]
+    lab_df = service.slice_years(service.resample_ohlcv(df, lab_view), lab_years)
+
+    if len(lab_df) < 30:
+        st.warning("Not enough data for this timeframe/history. Try a longer window.")
+    else:
+        rk = ranking_mod.rank_strategies(cfg, symbol, lab_df, view=lab_view)
+        tp, hp = rk["train_period"], rk["holdout_period"]
+        st.caption(
+            f"Tested **{rk['n_strategies_tried']}** strategies · "
+            f"train {tp[0].date()}→{tp[1].date()} · "
+            f"hold-out {hp[0].date()}→{hp[1].date()}" if hp else
+            f"Tested {rk['n_strategies_tried']} strategies (history too short for a hold-out).")
+
+        st.error("⚠️ Rankings are **historical and after-cost — not a prediction.** "
+                 "Picking the past winner is the easiest way to fool yourself; that's "
+                 "why the hold-out column is here. Most strategies still lose to buy & hold.",
+                 icon="⚠️")
+
+        def cell(m, key, pct=True):
+            if not m:
+                return "—"
+            v = m.get(key)
+            return f"{v*100:,.1f}%" if pct else f"{v:,.2f}"
+
+        table = []
+        for r in sorted(rk["rows"], key=lambda x: x["train"].get("sharpe", -9), reverse=True):
+            table.append({
+                "Strategy": ("⭐ " if r["classic"] else "") + r["name"],
+                "Family": r["family"],
+                "Train Sharpe": cell(r["train"], "sharpe", pct=False),
+                "Train return": cell(r["train"], "total_return"),
+                "Hold-out return": cell(r["holdout"], "total_return"),
+                "Hold-out Sharpe": cell(r["holdout"], "sharpe", pct=False),
+                "Train Calmar": cell(r["train"], "calmar", pct=False),
+            })
+        st.dataframe(pd.DataFrame(table), use_container_width=True, hide_index=True)
+
+        b = rk["best_by"]
+        st.info(f"**Train-window leaders** — by Sharpe: `{b['sharpe']}` · "
+                f"by total return: `{b['total_return']}` · by Calmar: `{b['calmar']}`. "
+                "Check their **hold-out** columns above before trusting any of them. "
+                "⭐ = well-known, evidence-backed classic (trend/momentum).")
+
+        # Equity overlay for a chosen strategy vs buy & hold over the full window.
+        names = [r["name"] for r in rk["rows"]]
+        default = b["sharpe"] if b["sharpe"] in names else names[0]
+        pick = st.selectbox("Equity curve (full window) — compare a strategy vs buy & hold",
+                            names, index=names.index(default))
+        res = service.backtest_summary(cfg, symbol, pick, leverage=1.0, df=lab_df, view=lab_view)
+        eq = pd.DataFrame({pick: res["strat_equity"], "buy_and_hold": res["bench_equity"]})
+        st.line_chart(eq, height=300)
 
 st.divider()
 st.caption("Educational sandbox. Not financial advice. Past performance — even real "
