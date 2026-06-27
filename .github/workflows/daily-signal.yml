@@ -1,0 +1,45 @@
+name: Daily buy signal
+
+# Runs once a day, computes the accumulation signal, and emails you only when a
+# market is in an actionable (FAVORABLE / LEANING FAVORABLE) window.
+# Requires two repo secrets: MAIL_USERNAME (your Gmail) and MAIL_PASSWORD
+# (a Gmail App Password). The email is sent to MAIL_USERNAME (yourself), so your
+# address never appears in this public repo.
+
+on:
+  schedule:
+    - cron: "17 13 * * *"   # 13:17 UTC daily (off the :00 mark on purpose)
+  workflow_dispatch: {}       # lets you run it manually to test
+
+jobs:
+  signal:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Compute signal
+        id: sig
+        run: python -m src.notify
+
+      - name: Send email (only when actionable)
+        if: steps.sig.outputs.should_send == 'true'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.MAIL_USERNAME }}
+          password: ${{ secrets.MAIL_PASSWORD }}
+          subject: ${{ steps.sig.outputs.subject }}
+          to: ${{ secrets.MAIL_USERNAME }}
+          from: Crypto Buy Signal <${{ secrets.MAIL_USERNAME }}>
+          body: ${{ steps.sig.outputs.body }}
