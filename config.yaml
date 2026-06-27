@@ -23,10 +23,12 @@ data:
     - META
     - SPY                   # S&P 500 ETF — the classic buy-and-hold benchmark
     - QQQ                   # Nasdaq-100 ETF
-  timeframe: 1d             # candle size: 1d, 1h, etc.
+  timeframe: 1d             # base fetch granularity (weekly/monthly are resampled)
+  years: 12                 # how much daily history to pull (more than 5y for
+                            # better long-term/monthly analysis; the app lets you
+                            # slice to 1/3/5/10y or Max within this)
   # Note: stablecoins (USDC/USDT/DAI) are intentionally excluded — they're pegged
   # to ~$1, so there's nothing to chart, backtest, or signal.
-  years: 5                  # how much history to pull
   cache_dir: data/cache     # parquet cache location
 
 # Simulated futures mechanics. These are the "real world" costs that

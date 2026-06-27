@@ -17,7 +17,7 @@ DEFAULTS = {
         "stocks": ["AAPL", "MSFT", "NVDA", "TSLA", "AMZN", "GOOGL", "META",
                    "SPY", "QQQ"],
         "timeframe": "1d",
-        "years": 5,
+        "years": 12,
         "cache_dir": "data/cache",
     },
     "backtest": {

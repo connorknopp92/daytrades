@@ -45,7 +45,10 @@ pip install -r requirements.txt
 A browser dashboard — pick a coin and strategy, drag the leverage slider, tap
 **Run**, and see charts and stats. Works great on a tablet/phone browser. Two tabs:
 
-- **Strategy backtest** — market analysis + a strategy vs. buy-and-hold.
+- **Strategy backtest** — market analysis + a strategy vs. buy-and-hold, with
+  **Daily / Weekly / Monthly** timeframes and a selectable history window
+  (1/3/5/10 years or Max). Up to ~12 years of daily data is fetched and
+  resampled; metrics annualize correctly per timeframe (52 weeks / 12 months).
 - **When to buy (accumulation)** — a live "is now a good time to accumulate?"
   signal plus a backtest of weekly buying rules (DCA, lump sum, buy-the-dip,
   buy-below-200-day) over the last few years. Answers *when to enter a hold*
