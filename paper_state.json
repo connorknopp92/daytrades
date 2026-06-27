@@ -277,6 +277,11 @@
       "agent_total": 900.0,
       "date": "2026-06-27",
       "hold_total": 900.0
+    },
+    {
+      "agent_total": 900.0,
+      "date": "2026-06-27",
+      "hold_total": 900.0
     }
   ],
   "initial_capital": 900.0,
