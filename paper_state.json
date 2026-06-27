@@ -7,13 +7,13 @@
         "strategy": "buy_and_hold",
         "units": 0.05514729096929471
       },
-      "agent_equity": 3333.3333333333335,
+      "agent_equity": 3336.798789097844,
       "hold": {
         "cash": 0.0,
         "units": 0.05514729096929471
       },
-      "hold_equity": 3333.3333333333335,
-      "price": 60444.19
+      "hold_equity": 3336.798789097844,
+      "price": 60507.03
     },
     "ETH/USD": {
       "agent": {
@@ -22,13 +22,13 @@
         "strategy": "sma_crossover",
         "units": -2.0963833194972037
       },
-      "agent_equity": 3333.3333333333335,
+      "agent_equity": 3330.356469019647,
       "hold": {
         "cash": 0.0,
         "units": 2.0963833194972037
       },
-      "hold_equity": 3333.3333333333335,
-      "price": 1590.04
+      "hold_equity": 3336.31019764702,
+      "price": 1591.46
     },
     "SPY": {
       "agent": {
@@ -52,6 +52,11 @@
       "agent_total": 10000.0,
       "date": "2026-06-27",
       "hold_total": 10000.0
+    },
+    {
+      "agent_total": 10000.488591450825,
+      "date": "2026-06-27",
+      "hold_total": 10006.442320078197
     }
   ],
   "initial_capital": 10000.0,
