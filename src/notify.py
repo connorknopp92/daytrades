@@ -18,9 +18,10 @@ from __future__ import annotations
 import os
 
 from . import accumulation as accum
+from . import paper as paper_mod
 from . import ranking as ranking_mod
 from . import service
-from .config import load_config
+from .config import load_config, project_path
 from .data import fetch as data_fetch
 
 ACTIONABLE = {"FAVORABLE", "LEANING FAVORABLE"}
@@ -68,11 +69,11 @@ def _line(r: dict) -> str:
     return f"{emoji} {r['symbol']} ({r['verdict']}) — " + ", ".join(parts)
 
 
-def build_payload(results: list[dict], top_n: int = TOP_N):
+def build_payload(results: list[dict], top_n: int = TOP_N, paper_lines: list[str] | None = None):
     """Pure logic: build the daily digest (should_send, subject, body).
 
-    Sends every day there is real data; ignores synthetic rows. Returns
-    (should_send, subject, body).
+    Sends every day there is real data; ignores synthetic rows. ``paper_lines``
+    (if given) is the paper-sandbox section. Returns (should_send, subject, body).
     """
     real = [r for r in results if not r.get("synthetic")]
     should_send = len(real) > 0
@@ -115,6 +116,9 @@ def build_payload(results: list[dict], top_n: int = TOP_N):
                 tail = f" — hold-out {wh*100:+.0f}% vs buy&hold {bh*100:+.0f}%"
             lines.append(f"  {star} {r['symbol']}: {r['best_strategy']}{tail}")
 
+    if paper_lines:
+        lines += [""] + list(paper_lines)
+
     lines += [
         "",
         "─" * 40,
@@ -152,7 +156,16 @@ def main() -> int:
             results.append(evaluate_symbol(cfg, symbol))
         except Exception as exc:  # don't let one symbol break the run
             print(f"[warn] {symbol}: {exc}")
-    should_send, subject, body = build_payload(results)
+    # Include the paper-sandbox section if its state file exists (the workflow
+    # advances it just before this step).
+    paper_lines = []
+    try:
+        state = paper_mod.load_state(project_path(cfg, cfg["paper"]["state_file"]))
+        paper_lines = paper_mod.summary_lines(state) if state else []
+    except Exception as exc:
+        print(f"[warn] paper section: {exc}")
+
+    should_send, subject, body = build_payload(results, paper_lines=paper_lines)
     _emit_github_output(should_send, subject, body)
     return 0
 

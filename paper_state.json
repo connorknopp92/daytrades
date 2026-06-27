@@ -1,0 +1,64 @@
+{
+  "accounts": {
+    "BTC/USD": {
+      "agent": {
+        "cash": 0.0,
+        "sig": 1.0,
+        "strategy": "buy_and_hold",
+        "units": 0.05514729096929471
+      },
+      "agent_equity": 3333.3333333333335,
+      "hold": {
+        "cash": 0.0,
+        "units": 0.05514729096929471
+      },
+      "hold_equity": 3333.3333333333335,
+      "price": 60444.19
+    },
+    "ETH/USD": {
+      "agent": {
+        "cash": 6666.666666666667,
+        "sig": -1.0,
+        "strategy": "sma_crossover",
+        "units": -2.0963833194972037
+      },
+      "agent_equity": 3333.3333333333335,
+      "hold": {
+        "cash": 0.0,
+        "units": 2.0963833194972037
+      },
+      "hold_equity": 3333.3333333333335,
+      "price": 1590.04
+    },
+    "SPY": {
+      "agent": {
+        "cash": 0.0,
+        "sig": 1.0,
+        "strategy": "ts_momentum",
+        "units": 4.572536492938188
+      },
+      "agent_equity": 3333.3333333333335,
+      "hold": {
+        "cash": 0.0,
+        "units": 4.572536492938188
+      },
+      "hold_equity": 3333.3333333333335,
+      "price": 728.989990234375
+    }
+  },
+  "created": "2026-06-27",
+  "history": [
+    {
+      "agent_total": 10000.0,
+      "date": "2026-06-27",
+      "hold_total": 10000.0
+    }
+  ],
+  "initial_capital": 10000.0,
+  "last_run": "2026-06-27",
+  "symbols": [
+    "BTC/USD",
+    "ETH/USD",
+    "SPY"
+  ]
+}

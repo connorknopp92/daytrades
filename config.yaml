@@ -48,4 +48,18 @@ backtest:
 analysis:
   rolling_window: 30        # window (in bars) for rolling vol/correlation
 
+# Paper-trading sandbox: a fake-money forward test that persists across daily
+# runs. The "agent" follows the walk-forward-best strategy for each symbol and is
+# tracked against a buy-and-hold shadow, so you can see (going forward, true
+# out-of-sample) whether the adaptive agent actually beats just holding. NO real
+# money, no orders — simulation only.
+paper:
+  symbols:
+    - BTC/USD
+    - ETH/USD
+    - SPY
+  initial_capital: 10000    # fake starting balance, split equally across symbols
+  state_file: paper_state.json
+  select_metric: sharpe     # metric the agent uses to pick the best strategy
+
 output_dir: outputs
