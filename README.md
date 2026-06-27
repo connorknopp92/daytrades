@@ -66,13 +66,15 @@ Strategies: `buy_and_hold`, `sma_crossover`⭐, `sma_timing`⭐, `macd`⭐,
 
 ## Paper-trading sandbox (forward test)
 
-`src/paper.py` runs a **fake-money** portfolio forward in time: each day the
-"agent" follows the walk-forward-best strategy for each symbol and is tracked
-against a buy-and-hold shadow, with state persisted (`paper_state.json`) so P&L
-accumulates across the daily GitHub Action. This is the honest, true
-out-of-sample test of whether the adaptive agent beats just holding — usually it
-doesn't. **Simulation only: no real money, no exchange, no orders.** The daily
-email shows the running paper result.
+`src/paper.py` runs a **fake-money** portfolio forward in time. By default it puts
+**$50 in every market** (all coins + stocks): each day an "agent" follows the
+walk-forward-best strategy per symbol, tracked against a buy-and-hold shadow, and
+a **leaderboard** ranks which $50 stake is worth the most. State persists
+(`paper_state.json`) so the record accumulates across the daily GitHub Action —
+the honest, true out-of-sample test of whether picking strategies (or picking
+"the best market") actually beats holding. Usually it doesn't, and last period's
+winner rarely repeats. **Simulation only: no real money, no exchange, no orders.**
+The daily email shows the running leaderboard.
 
 Run it locally:
 

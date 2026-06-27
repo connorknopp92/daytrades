@@ -71,18 +71,30 @@ def _advance_symbol(acct, price, name, sig, subcap, fee):
     return acct
 
 
+def resolve_symbols(cfg: dict) -> list[str]:
+    """Resolve the paper watchlist; 'all' = every crypto + stock."""
+    sym = cfg["paper"]["symbols"]
+    if sym == "all":
+        return list(cfg["data"]["symbols"]) + list(cfg["data"].get("stocks", []))
+    return list(sym)
+
+
 def step(cfg: dict, df_provider=None, today: str | None = None) -> dict:
     """Advance the paper portfolio one step on the latest data; return new state."""
     pcfg = cfg["paper"]
-    symbols = pcfg["symbols"]
+    symbols = resolve_symbols(cfg)
     fee = cfg["backtest"]["fee"]
     metric = pcfg.get("select_metric", "sharpe")
     path = project_path(cfg, pcfg["state_file"])
     today = today or _dt.date.today().isoformat()
 
+    # Per-market stake ($50 each) if set; else split a fixed initial capital.
+    stake = pcfg.get("stake")
+    initial = float(stake) * len(symbols) if stake else float(pcfg["initial_capital"])
+
     state = load_state(path)
     if state is None:
-        state = {"created": today, "initial_capital": float(pcfg["initial_capital"]),
+        state = {"created": today, "initial_capital": initial,
                  "symbols": symbols, "accounts": {}, "history": []}
     subcap = state["initial_capital"] / len(symbols)
 
@@ -120,15 +132,17 @@ def summary_lines(state: dict) -> list[str]:
         base = init / len(state["accounts"])
         return f"{(v / base - 1) * 100:+.1f}%"
 
+    stake = init / len(state["accounts"])
     lines = [
-        f"🧪 PAPER SANDBOX (fake money, started {state['created']}):",
+        f"🧪 PAPER SANDBOX (fake money, ${stake:,.0f} per market, started {state['created']}):",
         f"   Agent ${agent_total:,.0f} ({(agent_total/init-1)*100:+.1f}%) "
         f"vs Buy & Hold ${hold_total:,.0f} ({(hold_total/init-1)*100:+.1f}%)",
+        "   Leaderboard — $50 in each, best -> worst (buy & hold):",
     ]
-    for sym, a in state["accounts"].items():
-        lines.append(
-            f"   • {sym}: agent {pct(a['agent_equity'])} "
-            f"(via {a['agent'].get('strategy','?')}) vs hold {pct(a['hold_equity'])}")
+    ranked = sorted(state["accounts"].items(),
+                    key=lambda kv: kv[1]["hold_equity"], reverse=True)
+    for sym, a in ranked:
+        lines.append(f"     {sym}: ${a['hold_equity']:,.2f} ({pct(a['hold_equity'])})")
     return lines
 
 
