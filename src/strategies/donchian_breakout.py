@@ -10,6 +10,9 @@ from .base import Strategy
 
 class DonchianBreakout(Strategy):
     name = "donchian_breakout"
+    family = "breakout"
+    classic = True
+    blurb = "Long on a new N-bar high, short on a new N-bar low (the 'turtle' rule). Catches big trends, whipsaws when flat."
 
     def __init__(self, window: int = 20):
         self.window = window

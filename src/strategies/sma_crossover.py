@@ -10,6 +10,9 @@ from .base import Strategy
 
 class SmaCrossover(Strategy):
     name = "sma_crossover"
+    family = "trend"
+    classic = True
+    blurb = "Long when the fast SMA is above the slow SMA, else short. Works in trends, whipsaws in choppy markets."
 
     def __init__(self, fast: int = 20, slow: int = 50):
         if fast >= slow:
