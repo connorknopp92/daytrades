@@ -44,9 +44,11 @@ def test_backtest_summary_defaults_from_config():
 
 
 def test_high_leverage_liquidates():
-    cfg, df = _cfg_and_df()
-    out = service.backtest_summary(cfg, "BTC/USD", "buy_and_hold",
-                                   leverage=25.0, fee=0.001, slippage=0.001,
-                                   funding=0.0, df=df)
-    # 25x on a volatile synthetic series is virtually certain to be liquidated.
+    from tests.conftest import make_ohlcv
+    # A deterministic ~30% crash on day 3 must wipe out a 25x long.
+    close = [100.0, 100.0, 70.0, 75.0, 80.0]
+    df = make_ohlcv(close, high=close, low=close)
+    out = service.backtest_summary(cfg=load_config(), symbol="BTC/USD",
+                                   strategy_name="buy_and_hold", leverage=25.0,
+                                   fee=0.001, slippage=0.001, funding=0.0, df=df)
     assert out["strat_metrics"]["liquidated"] is True

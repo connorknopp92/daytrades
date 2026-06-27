@@ -8,6 +8,7 @@ the rest of the tool remains usable offline.
 
 from __future__ import annotations
 
+import hashlib
 import os
 import time
 
@@ -71,21 +72,29 @@ def _fetch_from_exchange(exchange_id: str, symbol: str, timeframe: str, since_ms
     all_rows: list[list] = []
     cursor = since_ms
     now = _now_ms()
+    empty_streak = 0
 
     while cursor < now:
         batch = exchange.fetch_ohlcv(symbol, timeframe=timeframe, since=cursor, limit=limit)
         if not batch:
-            break
+            # Empty window — likely before the pair was listed. Skip ahead a
+            # full page instead of giving up, so requesting more history than
+            # the pair has simply starts from its listing date. Bail after a
+            # long run of empties (e.g. a truly invalid symbol).
+            empty_streak += 1
+            if empty_streak > 40:
+                break
+            cursor += step * limit
+            continue
+        empty_streak = 0
         all_rows.extend(batch)
         last_ts = batch[-1][0]
         next_cursor = last_ts + step
         if next_cursor <= cursor:  # no forward progress -> stop
             break
         cursor = next_cursor
-        if len(batch) < limit:
-            # Reached the most recent candle.
-            if cursor >= now:
-                break
+        if len(batch) < limit and cursor >= now:
+            break  # reached the most recent candle
 
     if not all_rows:
         raise RuntimeError(f"No data returned for {symbol} from {exchange_id}")
@@ -106,7 +115,10 @@ def synthetic_ohlcv(symbol: str, timeframe: str, years: int, seed: int = 42) -> 
     """
     step = timeframe_ms(timeframe)
     n = max(int(years * 365 * 24 * 60 * 60 * 1000 / step), 50)
-    rng = np.random.default_rng(seed + (abs(hash(symbol)) % 1000))
+    # Stable per-symbol offset (hashlib, not the salt-randomized built-in hash())
+    # so synthetic series are reproducible across processes.
+    offset = int(hashlib.sha256(symbol.encode()).hexdigest(), 16) % 1000
+    rng = np.random.default_rng(seed + offset)
 
     # Mild upward drift with crypto-like volatility.
     daily_vol = 0.04

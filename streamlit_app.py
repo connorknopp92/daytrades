@@ -62,8 +62,21 @@ tab_bt, tab_buy = st.tabs(["📉 Strategy backtest", "🛒 When to buy (accumula
 # TAB 1 — strategy backtest vs buy & hold
 # ===========================================================================
 with tab_bt:
-    st.subheader(f"Market — {symbol}")
-    mkt = service.market_summary(cfg, symbol, df=df)
+    # Timeframe (candle size) + history window controls.
+    tc1, tc2 = st.columns(2)
+    view = tc1.radio("Timeframe", ["Daily", "Weekly", "Monthly"],
+                     horizontal=True, key="view").lower()
+    hist_label = tc2.selectbox("History", ["1 year", "3 years", "5 years",
+                                           "10 years", "Max"], index=2)
+    hist_years = {"1 year": 1, "3 years": 3, "5 years": 5,
+                  "10 years": 10, "Max": None}[hist_label]
+    prepared = service.slice_years(service.resample_ohlcv(df, view), hist_years)
+
+    st.subheader(f"Market — {symbol} ({view}, {hist_label.lower()})")
+    if len(prepared) < 2:
+        st.warning("Not enough data for this timeframe/history. Try a longer window.")
+        st.stop()
+    mkt = service.market_summary(cfg, symbol, df=prepared, view=view)
     s = mkt["stats"]
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Total return", _pct(s["total_return"]))
@@ -103,7 +116,7 @@ with tab_bt:
     else:
         res = service.backtest_summary(
             cfg, symbol, strategy, leverage=float(leverage),
-            fee=fee, slippage=slippage, funding=funding, df=df,
+            fee=fee, slippage=slippage, funding=funding, df=prepared, view=view,
         )
         sm, bm = res["strat_metrics"], res["bench_metrics"]
 
