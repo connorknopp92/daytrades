@@ -12,8 +12,30 @@ def _cfg(tmp_path, symbols):
     cfg = load_config()
     cfg["paper"]["state_file"] = str(tmp_path / "paper_state.json")
     cfg["paper"]["symbols"] = symbols
+    cfg["paper"]["stake"] = None          # use a fixed pot for these tests
     cfg["paper"]["initial_capital"] = 9000.0
     return cfg
+
+
+def test_resolve_all_symbols_covers_crypto_and_stocks():
+    from src import paper as p
+    cfg = load_config()
+    cfg["paper"]["symbols"] = "all"
+    syms = p.resolve_symbols(cfg)
+    assert "BTC/USD" in syms and "AAPL" in syms
+    assert len(syms) == len(cfg["data"]["symbols"]) + len(cfg["data"]["stocks"])
+
+
+def test_stake_sets_per_market_capital(tmp_path):
+    cfg = load_config()
+    cfg["paper"]["state_file"] = str(tmp_path / "p.json")
+    cfg["paper"]["symbols"] = ["BTC/USD", "ETH/USD"]
+    cfg["paper"]["stake"] = 50.0
+    from src import paper as p
+    df = make_ohlcv([100.0] * 300)
+    s = p.step(cfg, df_provider=lambda _s: df, today="2026-01-01")
+    assert s["initial_capital"] == 100.0          # $50 x 2 markets
+    assert s["accounts"]["BTC/USD"]["hold_equity"] == pytest.approx(50.0)
 
 
 def test_step_inits_advances_and_persists(tmp_path):

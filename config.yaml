@@ -54,11 +54,8 @@ analysis:
 # out-of-sample) whether the adaptive agent actually beats just holding. NO real
 # money, no orders — simulation only.
 paper:
-  symbols:
-    - BTC/USD
-    - ETH/USD
-    - SPY
-  initial_capital: 10000    # fake starting balance, split equally across symbols
+  symbols: all              # "all" = every crypto + stock; or an explicit list
+  stake: 50                 # fake dollars put into EACH market ($50 x 18 markets)
   state_file: paper_state.json
   select_metric: sharpe     # metric the agent uses to pick the best strategy
 
