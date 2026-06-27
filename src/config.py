@@ -32,6 +32,14 @@ DEFAULTS = {
     "analysis": {
         "rolling_window": 30,
     },
+    "paper": {
+        # Fake-money forward test. The "agent" follows the walk-forward-best
+        # strategy per symbol and is compared to a buy-and-hold shadow.
+        "symbols": ["BTC/USD", "ETH/USD", "SPY"],
+        "initial_capital": 10000.0,
+        "state_file": "paper_state.json",
+        "select_metric": "sharpe",
+    },
     "output_dir": "outputs",
 }
 

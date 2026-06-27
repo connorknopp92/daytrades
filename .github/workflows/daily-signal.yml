@@ -11,6 +11,9 @@ on:
     - cron: "17 13 * * *"   # 13:17 UTC daily (off the :00 mark on purpose)
   workflow_dispatch: {}       # lets you run it manually to test
 
+permissions:
+  contents: write             # allow committing the updated paper-sandbox state
+
 jobs:
   signal:
     runs-on: ubuntu-latest
@@ -25,6 +28,9 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r requirements.txt
+
+      - name: Advance paper sandbox (fake money, persisted)
+        run: python -m src.paper
 
       - name: Compute signal
         id: sig
@@ -46,3 +52,13 @@ jobs:
           to: ${{ secrets.MAIL_TO || secrets.MAIL_USERNAME }}
           from: Crypto Buy Signal <${{ secrets.MAIL_USERNAME }}>
           body: ${{ steps.sig.outputs.body }}
+
+      - name: Persist paper-sandbox state
+        if: always()           # keep the paper trail even if the email step fails
+        continue-on-error: true # a push hiccup must never break the digest
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add paper_state.json
+          git commit -m "Update paper sandbox state [skip ci]" || echo "no changes"
+          git push
