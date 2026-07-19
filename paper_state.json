@@ -22,13 +22,13 @@
         "strategy": "buy_and_hold",
         "units": 357.43399116144747
       },
-      "agent_equity": 58.7412025150599,
+      "agent_equity": 59.13437990533749,
       "hold": {
         "cash": 0.0,
         "units": 341.29692832764505
       },
-      "hold_equity": 56.14334470989761,
-      "price": 0.1645
+      "hold_equity": 56.51877133105802,
+      "price": 0.1656
     },
     "AMZN": {
       "agent": {
@@ -57,8 +57,8 @@
         "cash": 0.0,
         "units": 7.668711656441718
       },
-      "hold_equity": 50.306748466257666,
-      "price": 6.56
+      "hold_equity": 49.5398773006135,
+      "price": 6.46
     },
     "BTC/USD": {
       "agent": {
@@ -67,13 +67,13 @@
         "strategy": "buy_and_hold",
         "units": 0.0008279822222281102
       },
-      "agent_equity": 53.10680457317765,
+      "agent_equity": 53.37690065389068,
       "hold": {
         "cash": 0.0,
         "units": 0.0008279822222281102
       },
-      "hold_equity": 53.10680457317765,
-      "price": 64140.03
+      "hold_equity": 53.37690065389068,
+      "price": 64466.24
     },
     "DOGE/USD": {
       "agent": {
@@ -82,13 +82,13 @@
         "strategy": "donchian_breakout",
         "units": -663.9224538573894
       },
-      "agent_equity": 52.01832425972646,
+      "agent_equity": 51.83906519718497,
       "hold": {
         "cash": 0.0,
         "units": 663.9224538573894
       },
-      "hold_equity": 47.98167574027354,
-      "price": 0.07227
+      "hold_equity": 48.16093480281503,
+      "price": 0.07254
     },
     "ETH/USD": {
       "agent": {
@@ -102,8 +102,8 @@
         "cash": 0.0,
         "units": 0.03149388073897242
       },
-      "hold_equity": 58.09833649321937,
-      "price": 1844.75
+      "hold_equity": 59.000951115198326,
+      "price": 1873.41
     },
     "GOOGL": {
       "agent": {
@@ -122,18 +122,18 @@
     },
     "LINK/USD": {
       "agent": {
-        "cash": -0.10540030156256819,
-        "sig": 1.0,
-        "strategy": "buy_and_hold",
-        "units": 6.7408681333846845
+        "cash": 112.33003965405615,
+        "sig": -1.0,
+        "strategy": "keltner_breakout",
+        "units": -6.72825440653421
       },
-      "agent_equity": 55.81684173299677,
+      "agent_equity": 56.1087458330563,
       "hold": {
         "cash": 0.0,
         "units": 6.792555359326179
       },
-      "hold_equity": 56.351039260969976,
-      "price": 8.296
+      "hold_equity": 56.75859258252955,
+      "price": 8.356
     },
     "LTC/USD": {
       "agent": {
@@ -147,8 +147,8 @@
         "cash": 0.0,
         "units": 1.1698642957416938
       },
-      "hold_equity": 53.8020589611605,
-      "price": 45.99
+      "hold_equity": 55.19419747309311,
+      "price": 47.18
     },
     "META": {
       "agent": {
@@ -217,13 +217,13 @@
         "strategy": "buy_and_hold",
         "units": 0.6834276154845044
       },
-      "agent_equity": 51.11494555442167,
+      "agent_equity": 52.14692125380327,
       "hold": {
         "cash": 0.0,
         "units": 0.6956037840845855
       },
-      "hold_equity": 52.07985531441292,
-      "price": 74.87
+      "hold_equity": 53.130217028380635,
+      "price": 76.38
     },
     "SPY": {
       "agent": {
@@ -262,13 +262,13 @@
         "strategy": "buy_and_hold",
         "units": 47.250047250047245
       },
-      "agent_equity": 51.39387639387638,
+      "agent_equity": 51.72935172935173,
       "hold": {
         "cash": 0.0,
         "units": 47.250047250047245
       },
-      "hold_equity": 51.39387639387638,
-      "price": 1.0877
+      "hold_equity": 51.72935172935173,
+      "price": 1.0948
     }
   },
   "created": "2026-06-27",
@@ -397,10 +397,15 @@
       "agent_total": 935.4835994291974,
       "date": "2026-07-18",
       "hold_total": 957.0847802309082
+    },
+    {
+      "agent_total": 937.626968972563,
+      "date": "2026-07-19",
+      "hold_total": 961.2308343345932
     }
   ],
   "initial_capital": 900.0,
-  "last_run": "2026-07-18",
+  "last_run": "2026-07-19",
   "symbols": [
     "BTC/USD",
     "ETH/USD",
