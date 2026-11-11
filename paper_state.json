@@ -7,28 +7,28 @@
         "strategy": "ts_momentum",
         "units": 0.17619282618605658
       },
-      "agent_equity": 61.44460265904483,
+      "agent_equity": 62.527311017224285,
       "hold": {
         "cash": 0.0,
         "units": 0.17619282618605658
       },
-      "hold_equity": 61.44460265904484,
-      "price": 348.7349853515625
+      "hold_equity": 62.52731101722429,
+      "price": 354.8800048828125
     },
     "ADA/USD": {
       "agent": {
-        "cash": -0.0566890309982071,
-        "sig": 1.0,
-        "strategy": "buy_and_hold",
-        "units": 357.43399116144747
+        "cash": 126.37747823903669,
+        "sig": -1.0,
+        "strategy": "momentum_roc",
+        "units": -357.1139311400032
       },
-      "agent_equity": 62.308393746851145,
+      "agent_equity": 63.12545875551932,
       "hold": {
         "cash": 0.0,
         "units": 341.29692832764505
       },
-      "hold_equity": 59.54948805460751,
-      "price": 0.17448
+      "hold_equity": 60.45051194539249,
+      "price": 0.17712
     },
     "AMZN": {
       "agent": {
@@ -42,23 +42,23 @@
         "cash": 0.0,
         "units": 0.2148781618264434
       },
-      "hold_equity": 58.44363369673589,
-      "price": 271.9849853515625
+      "hold_equity": 57.223127311376345,
+      "price": 266.30499267578125
     },
     "AVAX/USD": {
       "agent": {
-        "cash": -0.09704559512594813,
-        "sig": 1.0,
-        "strategy": "macd",
-        "units": 5.557983019706617
+        "cash": 47.5149990944643,
+        "sig": 0.0,
+        "strategy": "rsi_reversion",
+        "units": 0.0
       },
-      "agent_equity": 45.767430283493056,
+      "agent_equity": 47.5149990944643,
       "hold": {
         "cash": 0.0,
         "units": 7.668711656441718
       },
-      "hold_equity": 63.28220858895706,
-      "price": 8.252
+      "hold_equity": 65.75920245398773,
+      "price": 8.575
     },
     "BTC/USD": {
       "agent": {
@@ -67,13 +67,13 @@
         "strategy": "buy_and_hold",
         "units": 0.0008279822222281102
       },
-      "agent_equity": 60.91956202389987,
+      "agent_equity": 61.577691973060105,
       "hold": {
         "cash": 0.0,
         "units": 0.0008279822222281102
       },
-      "hold_equity": 60.91956202389987,
-      "price": 73575.93
+      "hold_equity": 61.577691973060105,
+      "price": 74370.79
     },
     "DOGE/USD": {
       "agent": {
@@ -82,13 +82,13 @@
         "strategy": "momentum_roc",
         "units": -437.2691115836145
       },
-      "agent_equity": 43.20799271319058,
+      "agent_equity": 42.79695974830199,
       "hold": {
         "cash": 0.0,
         "units": 663.9224538573894
       },
-      "hold_equity": 44.82804408445093,
-      "price": 0.06752
+      "hold_equity": 45.45213119107687,
+      "price": 0.06846
     },
     "ETH/USD": {
       "agent": {
@@ -97,13 +97,13 @@
         "strategy": "sma_crossover",
         "units": -0.027399919558350683
       },
-      "agent_equity": 75.12570559101673,
+      "agent_equity": 74.36343982890342,
       "hold": {
         "cash": 0.0,
         "units": 0.03149388073897242
       },
-      "hold_equity": 64.54229943122053,
-      "price": 2049.36
+      "hold_equity": 65.41845919337872,
+      "price": 2077.18
     },
     "GOOGL": {
       "agent": {
@@ -112,13 +112,13 @@
         "strategy": "buy_and_hold",
         "units": 0.14959535114915598
       },
-      "agent_equity": 42.96838751843007,
+      "agent_equity": 43.90859484823705,
       "hold": {
         "cash": 0.0,
         "units": 0.1481964427788425
       },
-      "hold_equity": 42.61611042950557,
-      "price": 287.56500244140625
+      "hold_equity": 43.54752561508217,
+      "price": 293.8500061035156
     },
     "LINK/USD": {
       "agent": {
@@ -132,8 +132,8 @@
         "cash": 0.0,
         "units": 6.792555359326179
       },
-      "hold_equity": 70.0855861975275,
-      "price": 10.318
+      "hold_equity": 71.0161662817552,
+      "price": 10.455
     },
     "LTC/USD": {
       "agent": {
@@ -147,8 +147,8 @@
         "cash": 0.0,
         "units": 1.1698642957416938
       },
-      "hold_equity": 58.89915769770706,
-      "price": 50.347
+      "hold_equity": 59.639681796911546,
+      "price": 50.98
     },
     "META": {
       "agent": {
@@ -157,13 +157,13 @@
         "strategy": "sma_timing",
         "units": 0.09241283969252251
       },
-      "agent_equity": 59.55394287019802,
+      "agent_equity": 58.588227567324736,
       "hold": {
         "cash": 0.0,
         "units": 0.09086778736937756
       },
-      "hold_equity": 58.61653904652715,
-      "price": 645.0750122070312
+      "hold_equity": 57.66696955929123,
+      "price": 634.625
     },
     "MSFT": {
       "agent": {
@@ -177,8 +177,8 @@
         "cash": 0.0,
         "units": 0.13405903916227502
       },
-      "hold_equity": 71.56004251857856,
-      "price": 533.7949829101562
+      "hold_equity": 69.72410299537347,
+      "price": 520.0999755859375
     },
     "NVDA": {
       "agent": {
@@ -187,13 +187,13 @@
         "strategy": "buy_and_hold",
         "units": 0.2494185422598278
       },
-      "agent_equity": 41.94025044358714,
+      "agent_equity": 43.55772984237512,
       "hold": {
         "cash": 0.0,
         "units": 0.2596997886927562
       },
-      "hold_equity": 43.72565215413398,
-      "price": 168.3699951171875
+      "hold_equity": 45.40980544231468,
+      "price": 174.85499572753906
     },
     "QQQ": {
       "agent": {
@@ -202,13 +202,13 @@
         "strategy": "buy_and_hold",
         "units": 0.14096240940987192
       },
-      "agent_equity": 94.9625896250572,
+      "agent_equity": 97.34062478350873,
       "hold": {
         "cash": 0.0,
         "units": 0.07076940301447249
       },
-      "hold_equity": 47.726178735591276,
-      "price": 674.3900146484375
+      "hold_equity": 48.920058218891704,
+      "price": 691.260009765625
     },
     "SOL/USD": {
       "agent": {
@@ -217,13 +217,13 @@
         "strategy": "buy_and_hold",
         "units": 0.6834276154845044
       },
-      "agent_equity": 56.8694060768012,
+      "agent_equity": 57.88771322387311,
       "hold": {
         "cash": 0.0,
         "units": 0.6956037840845855
       },
-      "hold_equity": 57.93683917640513,
-      "price": 83.29
+      "hold_equity": 58.97328881469115,
+      "price": 84.78
     },
     "SPY": {
       "agent": {
@@ -232,13 +232,13 @@
         "strategy": "buy_and_hold",
         "units": 0.06858804739407283
       },
-      "agent_equity": 51.408114622415766,
+      "agent_equity": 52.13926136567242,
       "hold": {
         "cash": 0.0,
         "units": 0.06858804739407283
       },
-      "hold_equity": 51.408114622415766,
-      "price": 749.52001953125
+      "hold_equity": 52.13926136567242,
+      "price": 760.1799926757812
     },
     "TSLA": {
       "agent": {
@@ -247,13 +247,13 @@
         "strategy": "buy_and_hold",
         "units": 0.12617539765605684
       },
-      "agent_equity": 47.62523478543986,
+      "agent_equity": 49.21605441471921,
       "hold": {
         "cash": 0.0,
         "units": 0.1316794425355944
       },
-      "hold_equity": 49.79194824895034,
-      "price": 378.1300048828125
+      "hold_equity": 51.45216288547723,
+      "price": 390.7380065917969
     },
     "XRP/USD": {
       "agent": {
@@ -262,13 +262,13 @@
         "strategy": "buy_and_hold",
         "units": 47.250047250047245
       },
-      "agent_equity": 50.16537516537517,
+      "agent_equity": 50.03307503307503,
       "hold": {
         "cash": 0.0,
         "units": 47.250047250047245
       },
-      "hold_equity": 50.16537516537517,
-      "price": 1.0617
+      "hold_equity": 50.03307503307503,
+      "price": 1.0589
     }
   },
   "created": "2026-06-27",
@@ -967,10 +967,15 @@
       "agent_total": 1027.7627198440546,
       "date": "2026-11-10",
       "hold_total": 1015.5413825316341
+    },
+    {
+      "agent_total": 1038.0728732155128,
+      "date": "2026-11-11",
+      "hold_total": 1026.9305330940324
     }
   ],
   "initial_capital": 900.0,
-  "last_run": "2026-11-10",
+  "last_run": "2026-11-11",
   "symbols": [
     "BTC/USD",
     "ETH/USD",
